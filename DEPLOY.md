@@ -85,4 +85,4 @@ sudo yum install libreswan -y
 ```
 
 [magic_button]: https://oci-resourcemanager-plugin.plugins.oci.oraclecloud.com/latest/deploy-to-oracle-cloud.svg
-[magic_cpe_stack]: https://cloud.oracle.com/resourcemanager/stacks/create?zipUrl=https://github.com/oracle-quickstart/terraform-oci-cpe-quickstart/releases/latest/download/terraform-oci-cpe-quickstart-stack.zip
+[magic_cpe_stack]: https://cloud.oracle.com/resourcemanager/stacks/create?zipUrl=https://github.com/oracle-quickstart/oci-cpe/releases/latest/download/oci-cpe-stack.zip
