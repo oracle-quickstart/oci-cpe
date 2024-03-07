@@ -2,11 +2,12 @@
 
 ## Architecture
 
-![OCI CPE Architecture](./images/oci_cpe_generic_architecture.png)
+![OCI CPE Architecture](./images/oci_cpe_generic_architecture.png#gh-light-mode-only)![OCI CPE Architecture - Dark Mode](./images/oci_cpe_generic_architecture_dark.png#gh-dark-mode-only)
 
 ## Example usage Architecture (Weblogic example)
 
-![OCI CPE Architecture](./images/oci_cpe_wls_tutorial_architecture.png)
+
+![OCI CPE Tutorial Architecture](./images/oci_cpe_wls_tutorial_architecture.png#gh-light-mode-only)![OCI CPE Architecture - Dark Mode](./images/oci_cpe_wls_tutorial_architecture_dark.png#gh-dark-mode-only)
 
 ## Deploy Using Oracle Resource Manager
 
