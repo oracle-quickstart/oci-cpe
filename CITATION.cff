@@ -1,0 +1,28 @@
+cff-version: 1.2.0
+title: >-
+  Quickstart with Customer Premisses Equipment (CPE)
+  simulated on OCI
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Adao
+    family-names: Oliveira
+    name-suffix: Jr
+    orcid: 'https://orcid.org/0009-0009-8706-7964'
+identifiers:
+  - type: url
+    value: 'https://github.com/oracle-quickstart/oci-cpe'
+    description: GitHub Repo
+repository-code: 'https://github.com/oracle-quickstart/oci-cpe'
+abstract: >-
+  Quickstart with Customer Premisses Equipment (CPE)
+  simulated on OCI
+keywords:
+  - oracle cloud infrastructure
+  - oci
+  - ipsec
+  - customer-premisses-equipment
+  - site-to-site-vpn
+license: UPL-1.0
