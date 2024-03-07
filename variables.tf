@@ -17,9 +17,6 @@ variable "fingerprint" {
 variable "private_key_path" {
   default = ""
 }
-variable "home_region" {
-  default = ""
-}
 
 
 ################################################################################

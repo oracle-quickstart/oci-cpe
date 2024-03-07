@@ -78,13 +78,13 @@ locals {
       alternative_route_table_name = null
       dhcp_options_id              = module.vcn.default_dhcp_options_id
       security_list_ids            = [module.security_lists["cpe_security_list"].security_list_id]
-      extra_security_list_names    = anytrue([(var.extra_security_list_name_for_cpe == ""), (var.extra_security_list_name_for_cpe == null)]) ? [] : [var.extra_security_list_name_for_cpe]
+      extra_security_list_names    = [] #anytrue([(var.extra_security_list_name_for_cpe == ""), (var.extra_security_list_name_for_cpe == null)]) ? [] : [var.extra_security_list_name_for_cpe]
       ipv6cidr_block               = null
     },
     {
       subnet_name                  = "public_subnet"
       cidr_block                   = lookup(local.network_cidrs, "PUBLIC-REGIONAL-SUBNET-CIDR")
-      display_name                 = "Public subnet (${local.deploy_id})"
+      display_name                 = "Simulated Data Center Public subnet (${local.deploy_id})"
       dns_label                    = "public${local.deploy_id}"
       prohibit_public_ip_on_vnic   = false
       prohibit_internet_ingress    = false
@@ -98,7 +98,7 @@ locals {
     {
       subnet_name                  = "private_subnet"
       cidr_block                   = lookup(local.network_cidrs, "PRIVATE-REGIONAL-SUBNET-CIDR")
-      display_name                 = "Private subnet (${local.deploy_id})"
+      display_name                 = "Simulated Data Center Private subnet (${local.deploy_id})"
       dns_label                    = "private${local.deploy_id}"
       prohibit_public_ip_on_vnic   = true
       prohibit_internet_ingress    = true
@@ -234,13 +234,107 @@ locals {
           udp_options  = { max = -1, min = -1, source_port_range = null }
           icmp_options = { type = "3", code = "4" }
       }]
-    },
-    {
-      security_list_name = "dc_security_list"
-      display_name       = "Simulated Data Center Security List (${local.deploy_id})"
+      }, {
+      security_list_name = "private_security_list"
+      display_name       = "SDC Private Security List (${local.deploy_id})"
       egress_security_rules = [
         {
-          description      = "Allow Simulated Data Center to communicate with internet"
+          description      = "Allow SDC to communicate with internet"
+          destination      = lookup(local.network_cidrs, "ALL-CIDR")
+          destination_type = "CIDR_BLOCK"
+          protocol         = local.security_list_ports.all_protocols
+          stateless        = false
+          tcp_options      = { max = -1, min = -1, source_port_range = null }
+          udp_options      = { max = -1, min = -1, source_port_range = null }
+          icmp_options     = null
+          }, {
+          description      = "Allow SDC to communicate with CPE"
+          destination      = lookup(local.network_cidrs, "CPE-REGIONAL-SUBNET-CIDR")
+          destination_type = "CIDR_BLOCK"
+          protocol         = local.security_list_ports.all_protocols
+          stateless        = false
+          tcp_options      = { max = -1, min = -1, source_port_range = null }
+          udp_options      = { max = -1, min = -1, source_port_range = null }
+          icmp_options     = null
+          }, {
+          description      = "CPE Path discovery"
+          destination      = lookup(local.network_cidrs, "CPE-REGIONAL-SUBNET-CIDR")
+          destination_type = "CIDR_BLOCK"
+          protocol         = local.security_list_ports.icmp_protocol_number
+          stateless        = false
+          tcp_options      = { max = -1, min = -1, source_port_range = null }
+          udp_options      = { max = -1, min = -1, source_port_range = null }
+          icmp_options     = { type = "3", code = "4" }
+      }]
+      ingress_security_rules = [
+        {
+          description  = "Allows inbound traffic from CPE"
+          source       = lookup(local.network_cidrs, "CPE-REGIONAL-SUBNET-CIDR")
+          source_type  = "CIDR_BLOCK"
+          protocol     = local.security_list_ports.all_protocols
+          stateless    = false
+          tcp_options  = { max = -1, min = -1, source_port_range = null }
+          udp_options  = { max = -1, min = -1, source_port_range = null }
+          icmp_options = null
+          }, {
+          description  = "Allows inbound traffic from VCN"
+          source       = lookup(local.network_cidrs, "VCN-MAIN-CIDR")
+          source_type  = "CIDR_BLOCK"
+          protocol     = local.security_list_ports.all_protocols
+          stateless    = false
+          tcp_options  = { max = -1, min = -1, source_port_range = null }
+          udp_options  = { max = -1, min = -1, source_port_range = null }
+          icmp_options = null
+          }, {
+          description  = "Path discovery"
+          source       = lookup(local.network_cidrs, "VCN-MAIN-CIDR")
+          source_type  = "CIDR_BLOCK"
+          protocol     = local.security_list_ports.icmp_protocol_number
+          stateless    = false
+          tcp_options  = { max = -1, min = -1, source_port_range = null }
+          udp_options  = { max = -1, min = -1, source_port_range = null }
+          icmp_options = { type = "3", code = "4" }
+      }]
+      }, {
+      security_list_name = "public_security_list"
+      display_name       = "SDC Public Security List (${local.deploy_id})"
+      egress_security_rules = [
+        {
+          description      = "Allow SDC to communicate with internet"
+          destination      = lookup(local.network_cidrs, "ALL-CIDR")
+          destination_type = "CIDR_BLOCK"
+          protocol         = local.security_list_ports.all_protocols
+          stateless        = false
+          tcp_options      = { max = -1, min = -1, source_port_range = null }
+          udp_options      = { max = -1, min = -1, source_port_range = null }
+          icmp_options     = null
+      }]
+      ingress_security_rules = [
+        {
+          description  = "Allows inbound traffic from the internet"
+          source       = lookup(local.network_cidrs, "ALL-CIDR")
+          source_type  = "CIDR_BLOCK"
+          protocol     = local.security_list_ports.all_protocols
+          stateless    = false
+          tcp_options  = { max = -1, min = -1, source_port_range = null }
+          udp_options  = { max = -1, min = -1, source_port_range = null }
+          icmp_options = null
+          }, {
+          description  = "Allow inbound SSH traffic to SDC"
+          source       = lookup(local.network_cidrs, "ALL-CIDR")
+          source_type  = "CIDR_BLOCK"
+          protocol     = local.security_list_ports.tcp_protocol_number
+          stateless    = false
+          tcp_options  = { max = local.security_list_ports.ssh_port_number, min = local.security_list_ports.ssh_port_number, source_port_range = null }
+          udp_options  = { max = -1, min = -1, source_port_range = null }
+          icmp_options = null
+      }]
+      }, {
+      security_list_name = "bastion_security_list"
+      display_name       = "Bastion Security List (${local.deploy_id})"
+      egress_security_rules = [
+        {
+          description      = "Allow Bastion to communicate with internet"
           destination      = lookup(local.network_cidrs, "ALL-CIDR")
           destination_type = "CIDR_BLOCK"
           protocol         = local.security_list_ports.all_protocols

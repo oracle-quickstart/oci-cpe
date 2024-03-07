@@ -9,7 +9,6 @@ terraform {
       source  = "oracle/oci"
       version = "~> 4, < 6"
       # https://registry.terraform.io/providers/oracle/oci/
-      configuration_aliases = [oci.home_region]
     }
     tls = {
       source  = "hashicorp/tls"
