@@ -129,7 +129,7 @@ locals {
 
 # Route Tables definitions
 locals {
-  route_tables_for_cpe = [
+  route_tables_for_cpe_and_dc = [
     {
       route_table_name = "private"
       display_name     = "Private Route Table (${local.deploy_id})"
@@ -169,25 +169,7 @@ locals {
       display_name       = "CPE Security List (${local.deploy_id})"
       egress_security_rules = [
         {
-          description      = "Allows communication from (or to) worker nodes"
-          destination      = lookup(local.network_cidrs, "NODES-REGIONAL-SUBNET-CIDR")
-          destination_type = "CIDR_BLOCK"
-          protocol         = local.security_list_ports.all_protocols
-          stateless        = false
-          tcp_options      = { max = -1, min = -1, source_port_range = null }
-          udp_options      = { max = -1, min = -1, source_port_range = null }
-          icmp_options     = null
-          }, {
-          description      = "Allow worker nodes to communicate with pods on other worker nodes (when using VCN-native pod networking)"
-          destination      = lookup(local.network_cidrs, "VCN-NATIVE-POD-NETWORKING-REGIONAL-SUBNET-CIDR")
-          destination_type = "CIDR_BLOCK"
-          protocol         = local.security_list_ports.all_protocols
-          stateless        = false
-          tcp_options      = { max = -1, min = -1, source_port_range = null }
-          udp_options      = { max = -1, min = -1, source_port_range = null }
-          icmp_options     = null
-          }, {
-          description      = "(optional) Allow worker nodes to communicate with internet"
+          description      = "Allow CPE to communicate with internet"
           destination      = lookup(local.network_cidrs, "ALL-CIDR")
           destination_type = "CIDR_BLOCK"
           protocol         = local.security_list_ports.all_protocols
@@ -196,44 +178,17 @@ locals {
           udp_options      = { max = -1, min = -1, source_port_range = null }
           icmp_options     = null
           }, {
-          description      = "Allow nodes to communicate with OKE to ensure correct start-up and continued functioning"
-          destination      = lookup(data.oci_core_services.all_services_network.services[0], "cidr_block")
-          destination_type = "SERVICE_CIDR_BLOCK"
-          protocol         = local.security_list_ports.tcp_protocol_number
+          description      = "Allow CPE to communicate with Simulated Data Center"
+          destination      = lookup(local.network_cidrs, "PRIVATE-REGIONAL-SUBNET-CIDR")
+          destination_type = "CIDR_BLOCK"
+          protocol         = local.security_list_ports.all_protocols
           stateless        = false
           tcp_options      = { max = -1, min = -1, source_port_range = null }
-          udp_options      = { max = -1, min = -1, source_port_range = null }
-          icmp_options     = null
-          }, {
-          description      = "ICMP Access from Kubernetes Control Plane"
-          destination      = lookup(local.network_cidrs, "ALL-CIDR")
-          destination_type = "CIDR_BLOCK"
-          protocol         = local.security_list_ports.icmp_protocol_number
-          stateless        = false
-          tcp_options      = { max = -1, min = -1, source_port_range = null }
-          udp_options      = { max = -1, min = -1, source_port_range = null }
-          icmp_options     = { type = "3", code = "4" }
-          }, {
-          description      = "Access to Kubernetes API Endpoint"
-          destination      = lookup(local.network_cidrs, "ENDPOINT-REGIONAL-SUBNET-CIDR")
-          destination_type = "CIDR_BLOCK"
-          protocol         = local.security_list_ports.tcp_protocol_number
-          stateless        = false
-          tcp_options      = { max = local.security_list_ports.k8s_api_endpoint_port_number, min = local.security_list_ports.k8s_api_endpoint_port_number, source_port_range = null }
-          udp_options      = { max = -1, min = -1, source_port_range = null }
-          icmp_options     = null
-          }, {
-          description      = "Kubernetes worker to control plane communication"
-          destination      = lookup(local.network_cidrs, "ENDPOINT-REGIONAL-SUBNET-CIDR")
-          destination_type = "CIDR_BLOCK"
-          protocol         = local.security_list_ports.tcp_protocol_number
-          stateless        = false
-          tcp_options      = { max = local.security_list_ports.k8s_worker_to_control_plane_port_number, min = local.security_list_ports.k8s_worker_to_control_plane_port_number, source_port_range = null }
           udp_options      = { max = -1, min = -1, source_port_range = null }
           icmp_options     = null
           }, {
           description      = "Path discovery"
-          destination      = lookup(local.network_cidrs, "ENDPOINT-REGIONAL-SUBNET-CIDR")
+          destination      = lookup(local.network_cidrs, "PRIVATE-REGIONAL-SUBNET-CIDR")
           destination_type = "CIDR_BLOCK"
           protocol         = local.security_list_ports.icmp_protocol_number
           stateless        = false
@@ -243,8 +198,8 @@ locals {
       }]
       ingress_security_rules = [
         {
-          description  = "Allows communication from (or to) worker nodes"
-          source       = lookup(local.network_cidrs, "NODES-REGIONAL-SUBNET-CIDR")
+          description  = "Allows inbound traffic from the internet"
+          source       = lookup(local.network_cidrs, "ALL-CIDR")
           source_type  = "CIDR_BLOCK"
           protocol     = local.security_list_ports.all_protocols
           stateless    = false
@@ -252,16 +207,7 @@ locals {
           udp_options  = { max = -1, min = -1, source_port_range = null }
           icmp_options = null
           }, {
-          description  = "Allow pods on one worker node to communicate with pods on other worker nodes (when using VCN-native pod networking)"
-          source       = lookup(local.network_cidrs, "VCN-NATIVE-POD-NETWORKING-REGIONAL-SUBNET-CIDR")
-          source_type  = "CIDR_BLOCK"
-          protocol     = local.security_list_ports.all_protocols
-          stateless    = false
-          tcp_options  = { max = -1, min = -1, source_port_range = null }
-          udp_options  = { max = -1, min = -1, source_port_range = null }
-          icmp_options = null
-          }, {
-          description  = "(optional) Allow inbound SSH traffic to worker nodes"
+          description  = "Allow inbound SSH traffic to CPE"
           source       = lookup(local.network_cidrs, (var.cpe_visibility == "Private") ? "VCN-MAIN-CIDR" : "ALL-CIDR")
           source_type  = "CIDR_BLOCK"
           protocol     = local.security_list_ports.tcp_protocol_number
@@ -270,32 +216,14 @@ locals {
           udp_options  = { max = -1, min = -1, source_port_range = null }
           icmp_options = null
           }, {
-          description  = "Allow control plane to communicate with worker nodes"
-          source       = lookup(local.network_cidrs, "ENDPOINT-REGIONAL-SUBNET-CIDR")
+          description  = "Allow Simulated Data Center to communicate with CPE"
+          source       = lookup(local.network_cidrs, "PRIVATE-REGIONAL-SUBNET-CIDR")
           source_type  = "CIDR_BLOCK"
-          protocol     = local.security_list_ports.tcp_protocol_number
+          protocol     = local.security_list_ports.all_protocols
           stateless    = false
           tcp_options  = { max = -1, min = -1, source_port_range = null }
           udp_options  = { max = -1, min = -1, source_port_range = null }
           icmp_options = null
-          }, {
-          description  = "Kubernetes API endpoint to worker node communication (when using VCN-native pod networking)"
-          source       = lookup(local.network_cidrs, "ENDPOINT-REGIONAL-SUBNET-CIDR")
-          source_type  = "CIDR_BLOCK"
-          protocol     = local.security_list_ports.tcp_protocol_number
-          stateless    = false
-          tcp_options  = { max = local.security_list_ports.k8s_api_endpoint_to_worker_port_number, min = local.security_list_ports.k8s_api_endpoint_to_worker_port_number, source_port_range = null }
-          udp_options  = { max = -1, min = -1, source_port_range = null }
-          icmp_options = null
-          }, {
-          description  = "Path discovery - Kubernetes API Endpoint"
-          source       = lookup(local.network_cidrs, "ENDPOINT-REGIONAL-SUBNET-CIDR")
-          source_type  = "CIDR_BLOCK"
-          protocol     = local.security_list_ports.icmp_protocol_number
-          stateless    = false
-          tcp_options  = { max = -1, min = -1, source_port_range = null }
-          udp_options  = { max = -1, min = -1, source_port_range = null }
-          icmp_options = { type = "3", code = "4" }
           }, {
           description  = "Path discovery"
           source       = lookup(local.network_cidrs, "ALL-CIDR")
@@ -305,258 +233,50 @@ locals {
           tcp_options  = { max = -1, min = -1, source_port_range = null }
           udp_options  = { max = -1, min = -1, source_port_range = null }
           icmp_options = { type = "3", code = "4" }
-          }, {
-          description  = "Load Balancer to Worker nodes node ports"
-          source       = lookup(local.network_cidrs, "LB-REGIONAL-SUBNET-CIDR")
-          source_type  = "CIDR_BLOCK"
-          protocol     = local.security_list_ports.tcp_protocol_number # all_protocols
-          stateless    = false
-          tcp_options  = { max = 32767, min = 30000, source_port_range = null }
-          udp_options  = { max = -1, min = -1, source_port_range = null }
-          icmp_options = null
       }]
     },
     {
-      security_list_name = "oke_lb_security_list"
-      display_name       = "OKE Load Balancer Security List (${local.deploy_id})"
+      security_list_name = "dc_security_list"
+      display_name       = "Simulated Data Center Security List (${local.deploy_id})"
       egress_security_rules = [
         {
-          description      = "Allow traffic to worker nodes"
+          description      = "Allow Simulated Data Center to communicate with internet"
           destination      = lookup(local.network_cidrs, "ALL-CIDR")
-          destination_type = "CIDR_BLOCK"
-          protocol         = local.security_list_ports.tcp_protocol_number # all_protocols
-          stateless        = false
-          tcp_options      = { max = 32767, min = 30000, source_port_range = null }
-          udp_options      = { max = -1, min = -1, source_port_range = null }
-          icmp_options     = null
-      }]
-      ingress_security_rules = [
-        {
-          description  = "Allow inbound traffic to Load Balancer"
-          source       = lookup(local.network_cidrs, "ALL-CIDR")
-          source_type  = "CIDR_BLOCK"
-          protocol     = local.security_list_ports.tcp_protocol_number
-          stateless    = false
-          tcp_options  = { max = local.security_list_ports.https_port_number, min = local.security_list_ports.https_port_number, source_port_range = null }
-          udp_options  = { max = -1, min = -1, source_port_range = null }
-          icmp_options = null
-      }]
-    },
-    {
-      security_list_name = "oke_endpoint_security_list"
-      display_name       = "OKE K8s API Endpoint Security List (${local.deploy_id})"
-      egress_security_rules = [
-        {
-          description      = "Allow Kubernetes API Endpoint to communicate with OKE"
-          destination      = lookup(data.oci_core_services.all_services_network.services[0], "cidr_block")
-          destination_type = "SERVICE_CIDR_BLOCK"
-          protocol         = local.security_list_ports.tcp_protocol_number
-          stateless        = false
-          tcp_options      = { max = local.security_list_ports.https_port_number, min = local.security_list_ports.https_port_number, source_port_range = null }
-          udp_options      = { max = -1, min = -1, source_port_range = null }
-          icmp_options     = null
-          }, {
-          description      = "Path discovery"
-          destination      = lookup(local.network_cidrs, "NODES-REGIONAL-SUBNET-CIDR")
-          destination_type = "CIDR_BLOCK"
-          protocol         = local.security_list_ports.icmp_protocol_number
-          stateless        = false
-          tcp_options      = { max = -1, min = -1, source_port_range = null }
-          udp_options      = { max = -1, min = -1, source_port_range = null }
-          icmp_options     = { type = "3", code = "4" }
-          }, {
-          description      = "All traffic to worker nodes (when using flannel for pod networking)"
-          destination      = lookup(local.network_cidrs, "NODES-REGIONAL-SUBNET-CIDR")
-          destination_type = "CIDR_BLOCK"
-          protocol         = local.security_list_ports.tcp_protocol_number
-          stateless        = false
-          tcp_options      = { max = -1, min = -1, source_port_range = null }
-          udp_options      = { max = -1, min = -1, source_port_range = null }
-          icmp_options     = null
-          }, {
-          description      = "Kubernetes API endpoint to pod communication (when using VCN-native pod networking)"
-          destination      = lookup(local.network_cidrs, "VCN-NATIVE-POD-NETWORKING-REGIONAL-SUBNET-CIDR")
           destination_type = "CIDR_BLOCK"
           protocol         = local.security_list_ports.all_protocols
           stateless        = false
           tcp_options      = { max = -1, min = -1, source_port_range = null }
           udp_options      = { max = -1, min = -1, source_port_range = null }
           icmp_options     = null
-          }, {
-          description      = "Kubernetes API endpoint to worker node communication (when using VCN-native pod networking)"
-          destination      = lookup(local.network_cidrs, "NODES-REGIONAL-SUBNET-CIDR")
-          destination_type = "CIDR_BLOCK"
-          protocol         = local.security_list_ports.tcp_protocol_number
-          stateless        = false
-          tcp_options      = { max = local.security_list_ports.k8s_api_endpoint_to_worker_port_number, min = local.security_list_ports.k8s_api_endpoint_to_worker_port_number, source_port_range = null }
-          udp_options      = { max = -1, min = -1, source_port_range = null }
-          icmp_options     = null
       }]
       ingress_security_rules = [
         {
-          description  = "(optional) Client access to Kubernetes API endpoint"
+          description  = "Allows inbound traffic from the internet"
+          source       = lookup(local.network_cidrs, "ALL-CIDR")
+          source_type  = "CIDR_BLOCK"
+          protocol     = local.security_list_ports.all_protocols
+          stateless    = false
+          tcp_options  = { max = -1, min = -1, source_port_range = null }
+          udp_options  = { max = -1, min = -1, source_port_range = null }
+          icmp_options = null
+          }, {
+          description  = "Allow inbound SSH traffic to CPE"
           source       = lookup(local.network_cidrs, (var.cpe_visibility == "Private") ? "VCN-MAIN-CIDR" : "ALL-CIDR")
           source_type  = "CIDR_BLOCK"
           protocol     = local.security_list_ports.tcp_protocol_number
           stateless    = false
-          tcp_options  = { max = local.security_list_ports.k8s_api_endpoint_port_number, min = local.security_list_ports.k8s_api_endpoint_port_number, source_port_range = null }
-          udp_options  = { max = -1, min = -1, source_port_range = null }
-          icmp_options = null
-          }, {
-          description  = "Kubernetes worker to Kubernetes API endpoint communication"
-          source       = lookup(local.network_cidrs, "NODES-REGIONAL-SUBNET-CIDR")
-          source_type  = "CIDR_BLOCK"
-          protocol     = local.security_list_ports.tcp_protocol_number
-          stateless    = false
-          tcp_options  = { max = local.security_list_ports.k8s_api_endpoint_port_number, min = local.security_list_ports.k8s_api_endpoint_port_number, source_port_range = null }
-          udp_options  = { max = -1, min = -1, source_port_range = null }
-          icmp_options = null
-          }, {
-          description  = "Kubernetes worker to control plane communication"
-          source       = lookup(local.network_cidrs, "NODES-REGIONAL-SUBNET-CIDR")
-          source_type  = "CIDR_BLOCK"
-          protocol     = local.security_list_ports.tcp_protocol_number
-          stateless    = false
-          tcp_options  = { max = local.security_list_ports.k8s_worker_to_control_plane_port_number, min = local.security_list_ports.k8s_worker_to_control_plane_port_number, source_port_range = null }
-          udp_options  = { max = -1, min = -1, source_port_range = null }
-          icmp_options = null
-          }, {
-          description  = "Path discovery"
-          source       = lookup(local.network_cidrs, "NODES-REGIONAL-SUBNET-CIDR")
-          source_type  = "CIDR_BLOCK"
-          protocol     = local.security_list_ports.icmp_protocol_number
-          stateless    = false
-          tcp_options  = { max = -1, min = -1, source_port_range = null }
-          udp_options  = { max = -1, min = -1, source_port_range = null }
-          icmp_options = { type = "3", code = "4" }
-          }, {
-          description  = "Pod to Kubernetes API endpoint communication (when using VCN-native pod networking)"
-          source       = lookup(local.network_cidrs, "VCN-NATIVE-POD-NETWORKING-REGIONAL-SUBNET-CIDR")
-          source_type  = "CIDR_BLOCK"
-          protocol     = local.security_list_ports.tcp_protocol_number
-          stateless    = false
-          tcp_options  = { max = local.security_list_ports.k8s_api_endpoint_port_number, min = local.security_list_ports.k8s_api_endpoint_port_number, source_port_range = null }
-          udp_options  = { max = -1, min = -1, source_port_range = null }
-          icmp_options = null
-          }, {
-          description  = "Pod to control plane communication (when using VCN-native pod networking)"
-          source       = lookup(local.network_cidrs, "VCN-NATIVE-POD-NETWORKING-REGIONAL-SUBNET-CIDR")
-          source_type  = "CIDR_BLOCK"
-          protocol     = local.security_list_ports.tcp_protocol_number
-          stateless    = false
-          tcp_options  = { max = local.security_list_ports.k8s_worker_to_control_plane_port_number, min = local.security_list_ports.k8s_worker_to_control_plane_port_number, source_port_range = null }
-          udp_options  = { max = -1, min = -1, source_port_range = null }
-          icmp_options = null
-      }]
-    },
-    {
-      security_list_name = "oke_pod_network_security_list"
-      display_name       = "OKE VCN Native Pod Networking Security List (${local.deploy_id})"
-      egress_security_rules = [
-        {
-          description      = "Allow pods to communicate with each other"
-          destination      = lookup(local.network_cidrs, "VCN-NATIVE-POD-NETWORKING-REGIONAL-SUBNET-CIDR")
-          destination_type = "CIDR_BLOCK"
-          protocol         = local.security_list_ports.all_protocols
-          stateless        = false
-          tcp_options      = { max = -1, min = -1, source_port_range = null }
-          udp_options      = { max = -1, min = -1, source_port_range = null }
-          icmp_options     = null
-          }, {
-          description      = "Path discovery"
-          destination      = lookup(data.oci_core_services.all_services_network.services[0], "cidr_block")
-          destination_type = "SERVICE_CIDR_BLOCK"
-          protocol         = local.security_list_ports.icmp_protocol_number
-          stateless        = false
-          tcp_options      = { max = -1, min = -1, source_port_range = null }
-          udp_options      = { max = -1, min = -1, source_port_range = null }
-          icmp_options     = { type = "3", code = "4" }
-          }, {
-          description      = "Allow worker nodes to communicate with OCI services"
-          destination      = lookup(data.oci_core_services.all_services_network.services[0], "cidr_block")
-          destination_type = "SERVICE_CIDR_BLOCK"
-          protocol         = local.security_list_ports.tcp_protocol_number
-          stateless        = false
-          tcp_options      = { max = -1, min = -1, source_port_range = null }
-          udp_options      = { max = -1, min = -1, source_port_range = null }
-          icmp_options     = null
-          }, {
-          description      = "Allow Pods to communicate with Worker Nodes"
-          destination      = lookup(local.network_cidrs, "NODES-REGIONAL-SUBNET-CIDR")
-          destination_type = "CIDR_BLOCK"
-          protocol         = local.security_list_ports.tcp_protocol_number
-          stateless        = false
-          tcp_options      = { max = -1, min = -1, source_port_range = null }
-          udp_options      = { max = -1, min = -1, source_port_range = null }
-          icmp_options     = null
-          }, {
-          description      = "Pod to Kubernetes API endpoint communication (when using VCN-native pod networking)"
-          destination      = lookup(local.network_cidrs, "ENDPOINT-REGIONAL-SUBNET-CIDR")
-          destination_type = "CIDR_BLOCK"
-          protocol         = local.security_list_ports.tcp_protocol_number
-          stateless        = false
-          tcp_options      = { max = local.security_list_ports.k8s_api_endpoint_port_number, min = local.security_list_ports.k8s_api_endpoint_port_number, source_port_range = null }
-          udp_options      = { max = -1, min = -1, source_port_range = null }
-          icmp_options     = null
-          }, {
-          description      = "Pod to Kubernetes API endpoint communication (when using VCN-native pod networking)"
-          destination      = lookup(local.network_cidrs, "ENDPOINT-REGIONAL-SUBNET-CIDR")
-          destination_type = "CIDR_BLOCK"
-          protocol         = local.security_list_ports.tcp_protocol_number
-          stateless        = false
-          tcp_options      = { max = local.security_list_ports.k8s_worker_to_control_plane_port_number, min = local.security_list_ports.k8s_worker_to_control_plane_port_number, source_port_range = null }
-          udp_options      = { max = -1, min = -1, source_port_range = null }
-          icmp_options     = null
-          }, {
-          description      = "(optional) Allow pods to communicate with internet"
-          destination      = lookup(local.network_cidrs, "ALL-CIDR")
-          destination_type = "CIDR_BLOCK"
-          protocol         = local.security_list_ports.tcp_protocol_number
-          stateless        = false
-          tcp_options      = { max = local.security_list_ports.https_port_number, min = local.security_list_ports.https_port_number, source_port_range = null }
-          udp_options      = { max = -1, min = -1, source_port_range = null }
-          icmp_options     = null
-      }]
-      ingress_security_rules = [
-        {
-          description  = "Kubernetes API endpoint to pod communication (when using VCN-native pod networking)"
-          source       = lookup(local.network_cidrs, "ENDPOINT-REGIONAL-SUBNET-CIDR")
-          source_type  = "CIDR_BLOCK"
-          protocol     = local.security_list_ports.all_protocols
-          stateless    = false
-          tcp_options  = { max = -1, min = -1, source_port_range = null }
-          udp_options  = { max = -1, min = -1, source_port_range = null }
-          icmp_options = null
-          }, {
-          description  = "Allow pods on one worker node to communicate with pods on other worker nodes"
-          source       = lookup(local.network_cidrs, "NODES-REGIONAL-SUBNET-CIDR")
-          source_type  = "CIDR_BLOCK"
-          protocol     = local.security_list_ports.all_protocols
-          stateless    = false
-          tcp_options  = { max = -1, min = -1, source_port_range = null }
-          udp_options  = { max = -1, min = -1, source_port_range = null }
-          icmp_options = null
-          }, {
-          description  = "Allow pods to communicate with each other"
-          source       = lookup(local.network_cidrs, "VCN-NATIVE-POD-NETWORKING-REGIONAL-SUBNET-CIDR")
-          source_type  = "CIDR_BLOCK"
-          protocol     = local.security_list_ports.all_protocols
-          stateless    = false
-          tcp_options  = { max = -1, min = -1, source_port_range = null }
+          tcp_options  = { max = local.security_list_ports.ssh_port_number, min = local.security_list_ports.ssh_port_number, source_port_range = null }
           udp_options  = { max = -1, min = -1, source_port_range = null }
           icmp_options = null
       }]
     }
   ]
   security_list_ports = {
-    http_port_number                        = 80
-    https_port_number                       = 443
-    k8s_api_endpoint_port_number            = 6443
-    k8s_api_endpoint_to_worker_port_number  = 10250
-    k8s_worker_to_control_plane_port_number = 12250
-    ssh_port_number                         = 22
-    tcp_protocol_number                     = "6"
-    icmp_protocol_number                    = "1"
-    all_protocols                           = "all"
+    http_port_number     = 80
+    https_port_number    = 443
+    ssh_port_number      = 22
+    tcp_protocol_number  = "6"
+    icmp_protocol_number = "1"
+    all_protocols        = "all"
   }
 }

@@ -33,7 +33,7 @@ locals {
   vcn_display_name              = "[${local.app_name}] VCN for CPE Test (${local.deploy_id})"
   create_subnets                = (var.create_subnets) ? true : false
   subnets                       = concat(local.subnets_for_cpe)
-  route_tables                  = concat(local.route_tables_for_cpe)
+  route_tables                  = concat(local.route_tables_for_cpe_and_dc)
   security_lists                = concat(local.security_lists_for_cpe)
   resolved_vcn_compartment_ocid = (var.create_new_compartment_for_cpe ? local.cpe_compartment_ocid : var.compartment_ocid)
   pre_vcn_cidr_blocks           = split(",", var.vcn_cidr_blocks)

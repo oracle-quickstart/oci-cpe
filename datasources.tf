@@ -4,9 +4,9 @@
 
 # Available OCI Services
 data "oci_core_services" "all_services_network" {
-    filter {
-        name   = "name"
-        values = ["All .* Services In Oracle Services Network"]
-        regex  = true
-    }
+  filter {
+    name   = "name"
+    values = ["All .* Services In Oracle Services Network"]
+    regex  = true
+  }
 }
