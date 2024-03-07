@@ -3,7 +3,7 @@
 #
 
 terraform {
-  required_version = ">= 1.6"
+  required_version = ">= 1.2" #>= 1.6 when using OpenTofu
   required_providers {
     oci = {
       source  = "oracle/oci"
