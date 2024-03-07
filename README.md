@@ -29,6 +29,10 @@
 
 1. If no further changes are necessary, return to the Stack Details page, click Terraform Actions, and select Apply.
 
+## Other Deployment Options
+
+For other deployment options, see [DEPLOY](./DEPLOY.md) for more details.
+
 ## License
 
 Copyright (c) 2024 Oracle and/or its affiliates.
