@@ -36,11 +36,8 @@ variable "tag_values" {
 }
 
 ################################################################################
-# Variables: Compute Instance
+# Variables: Compute Instance - Generic
 ################################################################################
-variable "num_nodes" {
-  default = 1
-}
 variable "generate_public_ssh_key" {
   default = true
 }
@@ -48,29 +45,30 @@ variable "public_ssh_key" {
   default     = ""
   description = "In order to access your private nodes with a public SSH key you will need to set up a bastion host (a.k.a. jump box). If using public nodes, bastion is not needed. Left blank to not import keys."
 }
-variable "instance_shape" {
+
+################################################################################
+# Variables: Compute Instance - CPE
+################################################################################
+variable "cpe_instance_shape" {
   type = map(any)
   default = {
-    "instanceShape" = "VM.Standard.A1.Flex"
-    "ocpus"         = 1
-    "memory"        = 6
+    "instanceShape" = "VM.Standard.E4.Flex"
+    "ocpus"         = 2
+    "memory"        = 16
   }
   description = "A shape is a template that determines the number of OCPUs, amount of memory, and other resources allocated to a newly created instance."
 }
-variable "instance_boot_volume_size_in_gbs" {
+variable "cpe_instance_boot_volume_size_in_gbs" {
   default     = "50"
   description = "Specify a custom boot volume size (in GB)"
 }
-variable "image_operating_system" {
+variable "cpe_image_operating_system" {
   default     = "Oracle Linux"
   description = "The OS/image installed on all nodes in the node pool."
 }
-variable "image_operating_system_version" {
+variable "cpe_image_operating_system_version" {
   default     = "9"
   description = "The OS/image version installed on all nodes in the node pool."
-}
-variable "instance_visibility" {
-  default = "Public"
 }
 variable "create_new_compartment_for_cpe" {
   default     = false
@@ -101,7 +99,7 @@ variable "extra_security_list_name_for_cpe" {
 # Variables: Bastion
 ################################################################################
 variable "create_bastion_subnet" {
-  default     = true
+  default     = false
   description = "Creates a new Bastion Subnet."
 }
 variable "bastion_visibility" {
@@ -146,4 +144,17 @@ variable "ipv6private_cidr_blocks" {
 variable "create_subnets" {
   default     = true
   description = "Create subnets for CPE"
+}
+
+variable "existent_cpe_subnet_ocid" {
+  default     = ""
+  description = "Using existent CPE Subnet OCID."
+}
+variable "existent_private_subnet_ocid" {
+  default     = ""
+  description = "Using existent Private Subnet OCID."
+}
+variable "existent_public_subnet_ocid" {
+  default     = ""
+  description = "Using existent Public Subnet OCID."
 }

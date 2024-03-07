@@ -4,8 +4,7 @@
 
 ![OCI CPE Architecture](./images/oci_cpe_generic_architecture.png#gh-light-mode-only)![OCI CPE Architecture - Dark Mode](./images/oci_cpe_generic_architecture_dark.png#gh-dark-mode-only)
 
-## Example usage Architecture (Weblogic example)
-
+## Example usage Architecture (WebLogic example)
 
 ![OCI CPE Tutorial Architecture](./images/oci_cpe_wls_tutorial_architecture.png#gh-light-mode-only)![OCI CPE Architecture - Dark Mode](./images/oci_cpe_wls_tutorial_architecture_dark.png#gh-dark-mode-only)
 
