@@ -25,5 +25,10 @@ terraform {
       version = "~> 3"
       # https://registry.terraform.io/providers/hashicorp/random/
     }
+    cloudinit = {
+      source  = "hashicorp/cloudinit"
+      version = "~> 2"
+      # https://registry.terraform.io/providers/hashicorp/cloudinit/
+    }
   }
 }
