@@ -5,7 +5,7 @@
 resource "oci_core_instance" "cpe_instance" {
   availability_domain = random_shuffle.compute_ad.result[count.index % length(random_shuffle.compute_ad.result)]
   compartment_id      = var.compartment_ocid
-  display_name        = "cpe-test-${random_string.deploy_id.result}-${count.index}"
+  display_name        = "cpe-instance-${random_string.deploy_id.result}-${count.index}"
   shape               = var.cpe_instance_shape.instanceShape
   # is_pv_encryption_in_transit_enabled = var.is_pv_encryption_in_transit_enabled
   freeform_tags = local.oci_tag_values.freeformTags

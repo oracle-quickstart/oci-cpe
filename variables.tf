@@ -90,6 +90,10 @@ variable "cpe_visibility" {
     error_message = "Sorry, but CPE visibility can only be Private or Public."
   }
 }
+variable "cpe_vendor" {
+  default     = "Libreswan"
+  description = "CPE Vendor. e.g.: Libreswan, Cisco, Juniper, Palo Alto, ..."
+}
 variable "extra_security_list_name_for_cpe" {
   default     = []
   description = "Extra security lists to be created."
@@ -113,7 +117,15 @@ variable "bastion_visibility" {
 }
 
 ################################################################################
-# Variables: OCI Networking
+# Variables: OCI Networking for OCI Resources (Used by DRG)
+################################################################################
+variable "existent_oci_vcn_ocid" {
+  default     = ""
+  description = "Using existent Virtual Cloud Network (VCN) OCID for OCI Resources to Connect to DRG."
+}
+
+################################################################################
+# Variables: OCI Networking for CPE
 ################################################################################
 ## VCN
 variable "create_new_vcn" {
@@ -122,14 +134,14 @@ variable "create_new_vcn" {
 }
 variable "existent_vcn_ocid" {
   default     = ""
-  description = "Using existent Virtual Cloud Network (VCN) OCID."
+  description = "Using existent Virtual Cloud Network (VCN) OCID for CPE."
 }
 variable "existent_vcn_compartment_ocid" {
   default     = ""
   description = "Compartment OCID for existent Virtual Cloud Network (VCN)."
 }
 variable "vcn_cidr_blocks" {
-  default     = "10.100.0.0/16"
+  default     = "10.220.0.0/16"
   description = "IPv4 CIDR Blocks for the Virtual Cloud Network (VCN). If use more than one block, separate them with comma. e.g.: 10.100.0.0/16,10.200.0.0/16. If you plan to peer this VCN with another VCN, the VCNs must not have overlapping CIDRs."
 }
 variable "is_ipv6enabled" {
