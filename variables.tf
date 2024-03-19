@@ -23,7 +23,7 @@ variable "private_key_path" {
 # App Name to identify deployment. Used for naming resources.
 ################################################################################
 variable "app_name" {
-  default     = "CPE Test"
+  default     = "CPE on OCI"
   description = "Application name. Will be used as prefix to identify resources."
 }
 variable "tag_values" {

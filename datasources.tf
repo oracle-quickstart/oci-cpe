@@ -21,6 +21,19 @@ data "oci_core_images" "cpe_compute_images" {
   sort_order               = "DESC"
 }
 
+# CPE Device Shapes per vendor
+data "oci_core_cpe_device_shapes" "cpe" {
+  filter {
+    name   = "cpe_device_info.vendor"
+    values = [var.cpe_vendor]
+  }
+}
+
+# Get IpSec Tunnels
+data "oci_core_ipsec_connection_tunnels" "tunnels" {
+  ipsec_id = oci_core_ipsec.ipsec.0.id
+}
+
 # Gets a list of Availability Domains
 data "oci_identity_availability_domains" "ADs" {
   compartment_id = var.tenancy_ocid
@@ -57,6 +70,9 @@ resource "random_shuffle" "compute_ad" {
   input        = local.compute_available_limit_ad_list
   result_count = length(local.compute_available_limit_ad_list)
 }
+resource "random_bytes" "shared_secret_psk" {
+  length = 64
+}
 locals {
   compute_multiplier_nodes_ocpus  = local.is_flexible_cpe_instance_shape ? (var.cpe_instance_shape.ocpus) : 1
   compute_available_limit_ad_list = [for limit in data.oci_limits_resource_availability.compute_resource_availability : limit.availability_domain if(limit.available - local.compute_multiplier_nodes_ocpus) >= 0]
@@ -81,4 +97,38 @@ locals {
   ]
   compute_shape_flexible_vs_descriptions = zipmap(local.compute_flexible_shapes, local.compute_shape_flexible_descriptions)
   compute_shape_description              = lookup(local.compute_shape_flexible_vs_descriptions, var.cpe_instance_shape.instanceShape, var.cpe_instance_shape.instanceShape)
+}
+
+# Cloud Init - CPE
+data "cloudinit_config" "cpe" {
+  gzip          = true
+  base64_encode = true
+
+  part {
+    filename     = "cloud-config.yaml"
+    content_type = "text/cloud-config"
+    content      = local.cloud_init
+  }
+}
+
+## Files and Templatefiles
+locals {
+  setup_preflight = file("${path.module}/cloudinit/setup.preflight.sh")
+  setup_template = templatefile("${path.module}/cloudinit/setup.template.sh",
+    {
+      oracle_client_version = "xx"
+  })
+  deploy_template = templatefile("${path.module}/cloudinit/deploy.template.sh",
+    {
+      oracle_client_version = "xx"
+  })
+  #   ,{
+  #     oracle_client_version   = var.oracle_client_version
+  # })
+  cloud_init = templatefile("${path.module}/cloudinit/cloud-config.template.yaml",
+    {
+      setup_preflight_sh_content = base64gzip(local.setup_preflight)
+      setup_template_sh_content  = base64gzip(local.setup_template)
+      deploy_template_content    = base64gzip(local.deploy_template)
+  })
 }

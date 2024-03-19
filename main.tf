@@ -88,7 +88,7 @@ resource "oci_core_ipsec" "ipsec" {
   count = 1
 }
 resource "oci_core_ipsec_connection_tunnel_management" "tunnel" {
-  ipsec_id     = oci_core_ipsec.ipsec.id
+  ipsec_id     = oci_core_ipsec.ipsec.0.id
   tunnel_id    = data.oci_core_ipsec_connection_tunnels.tunnels.ip_sec_connection_tunnels[count.index].id
   display_name = "IpSec Tunnel (${random_string.deploy_id.result}) [${count.index}]"
   routing      = "BGP"
