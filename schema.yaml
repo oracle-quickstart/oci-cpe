@@ -1,0 +1,166 @@
+# Copyright (c) 2022 Oracle and/or its affiliates. All rights reserved.
+# Licensed under the Universal Permissive License v 1.0 as shown at http://oss.oracle.com/licenses/upl.
+#
+
+title: "OCI CPE"
+description: "OCI CPE with Simulated Data Center"
+informationalText: "This stack deploys a Customer Premisses Equipment (CPE) on OCI, simulating a on-prem or hybrid/other cloud implementation to connect to OCI workloads."
+schemaVersion: 1.1.0
+version: "20190304"
+
+source:
+  type: quickstart
+
+locale: "en"
+variableGroups:
+  - title: "Basic Hidden"
+    variables:
+    - tenancy_ocid
+    - region
+    - user_ocid
+    - fingerprint
+    - private_key_path
+    visible: false
+
+  - title: "General Configuration"
+    variables:
+    - app_name
+    - compartment_ocid
+
+  - title: "OCI Resources Existent VCN"
+    variables:
+    - existent_oci_vcn_ocid
+
+  - title: "CPE Compute Configuration"
+    variables:
+    - cpe_instance_shape
+    - cpe_instance_boot_volume_size_in_gbs
+    - generate_public_ssh_key
+    - public_ssh_key
+    - cpe_visibility
+    - cpe_vendor
+
+
+  - title: "Bastion Configuration"
+    variables:
+    - create_bastion_subnet
+    - bastion_visibility
+
+  - title: "Tagging"
+    variables:
+    - tag_values
+
+  - title: "Extras Hidden"
+    variables:
+      - extra_security_list_name_for_cpe
+      - cpe_compartment_description
+      - create_new_compartment_for_cpe
+      - cpe_image_operating_system
+      - cpe_image_operating_system_version
+      - cpe_instance_boot_volume_size_in_gbs
+    visible: false
+
+  - title: "Hidden CPE Network"
+    variables:
+      - create_new_vcn
+      - create_subnets
+      - existent_cpe_subnet_ocid
+      - existent_private_subnet_ocid
+      - existent_public_subnet_ocid
+      - existent_vcn_compartment_ocid
+      - existent_vcn_ocid
+      - ipv6private_cidr_blocks
+      - is_ipv6enabled
+      - vcn_cidr_blocks
+    visible: false
+
+variables:
+  compartment_ocid:
+    type: oci:identity:compartment:id
+    title: "Compartment"
+    description: "The compartment in which to create compute instance(s)"
+    required: true
+
+  app_name:
+    type: string
+    title: "Cluster Name Prefix"
+    required: true
+    description: "The prefix for the name of the CPE cluster"
+
+  generate_public_ssh_key:
+    type: boolean
+    title: "Auto generate public ssh key?"
+    required: true
+    # visible:
+    #   and:
+    #     - create_new_oke_cluster
+    #     - show_advanced
+
+  public_ssh_key:
+    type: oci:core:ssh:publickey
+    title: "Import your own SSH public key"
+    additionalProps:
+      allowMultiple: true
+    required: false
+    pattern: "((^(ssh-rsa AAAAB3NzaC1yc2|ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNT|ecdsa-sha2-nistp384 AAAAE2VjZHNhLXNoYTItbmlzdHAzODQAAAAIbmlzdHAzOD|ecdsa-sha2-nistp521 AAAAE2VjZHNhLXNoYTItbmlzdHA1MjEAAAAIbmlzdHA1Mj|ssh-ed25519 AAAAC3NzaC1lZDI1NTE5|ssh-dss AAAAB3NzaC1kc3)[0-9A-Za-z+\/]+[=]{0,3})( [^,]*)?)(,((ssh-rsa AAAAB3NzaC1yc2|ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNT|ecdsa-sha2-nistp384 AAAAE2VjZHNhLXNoYTItbmlzdHAzODQAAAAIbmlzdHAzOD|ecdsa-sha2-nistp521 AAAAE2VjZHNhLXNoYTItbmlzdHA1MjEAAAAIbmlzdHA1Mj|ssh-ed25519 AAAAC3NzaC1lZDI1NTE5|ssh-dss AAAAB3NzaC1kc3)[0-9A-Za-z+\/]+[=]{0,3})( [^,]*)?)*$"
+    visible:
+      and:
+        # - and:
+        #   - create_new_oke_cluster
+        #   - show_advanced
+        - not:
+          - generate_public_ssh_key
+
+  existent_oci_vcn_ocid:
+    type: oci:core:vcn:id
+    title: "Existent VCN with OCI Resources (e.g.: WebLogic on OCI, ATP, etc) to be connected to the CPE"
+    required: true
+    dependsOn:
+        compartmentId: compartment_ocid
+
+  cpe_instance_shape:
+    type: oci:core:instanceshapewithflex:name
+    title: "Select a flex or fixed shape for the Worker Nodes instances"
+    required: true
+    dependsOn:
+      compartmentId: compartment_ocid
+    # visible:
+    #   and:
+    #     - create_new_oke_cluster
+    #     - show_advanced
+
+  cpe_visibility:
+    type: enum
+    enum:
+    - "Private"
+    - "Public"
+    title: "CPE will be hosted in public or private subnet(s)"
+    required: true
+
+  cpe_vendor:
+    type: enum
+    enum:
+    - "Libreswan"
+    title: "CPE Vendor. e.g.: Libreswan, WireGuard, ..."
+    required: true
+
+  create_bastion_subnet:
+    type: boolean
+    title: "Creates a new Bastion Subnet."
+    required: true
+
+  bastion_visibility:
+    type: enum
+    enum:
+    - "Private"
+    - "Public"
+    title: "Bastion will be hosted in public or private subnet(s)"
+    required: true
+
+  tag_values:
+    type: oci:identity:tag:value
+    title: Tag Resources
+    required: false
+    visible: show_advanced
+    dependsOn:
+      compartmentId: compartment_ocid
