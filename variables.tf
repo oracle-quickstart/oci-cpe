@@ -135,11 +135,11 @@ variable "ldap_instance_boot_volume_size_in_gbs" {
   description = "Specify a custom boot volume size (in GB)"
 }
 variable "ldap_image_operating_system" {
-  default     = "Oracle Linux"
+  default     = "Canonical Ubuntu"
   description = "The OS/image installed on all nodes in the node pool."
 }
 variable "ldap_image_operating_system_version" {
-  default     = "9"
+  default     = "22.04"
   description = "The OS/image version installed on all nodes in the node pool."
 }
 variable "create_new_compartment_for_ldap" {
@@ -148,6 +148,16 @@ variable "create_new_compartment_for_ldap" {
 }
 variable "ldap_compartment_description" {
   default = "Compartment for Example LDAP Server"
+}
+
+variable "ldap_instance_visibility" {
+  default     = "Private"
+  description = "LDAP will be hosted in public or private subnet(s)"
+
+  validation {
+    condition     = var.ldap_instance_visibility == "Private" || var.ldap_instance_visibility == "Public"
+    error_message = "Sorry, but LDAP Instance visibility can only be Private or Public."
+  }
 }
 
 ################################################################################

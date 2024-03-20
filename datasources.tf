@@ -29,7 +29,17 @@ data "oci_core_cpe_device_shapes" "cpe" {
   }
 }
 
-# Get IpSec Tunnels
+# Latest Image for Example LDAP Compute Instance
+data "oci_core_images" "ldap_compute_images" {
+  compartment_id           = var.compartment_ocid
+  operating_system         = var.ldap_image_operating_system
+  operating_system_version = var.ldap_image_operating_system_version
+  shape                    = var.ldap_instance_shape.instanceShape
+  sort_by                  = "TIMECREATED"
+  sort_order               = "DESC"
+}
+
+# Get IPSec Tunnels
 data "oci_core_ipsec_connection_tunnels" "tunnels" {
   ipsec_id = oci_core_ipsec.ipsec.0.id
 }

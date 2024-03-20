@@ -8,7 +8,7 @@ write_files:
   - path: "/etc/ipsec.d/oci-ipsec.conf"
     permissions: "0644"
     content: |
-      conn oci-tunnel-1
+      conn ipsec-tunnel-0
           left=$cpe_local_ip
           leftid=$cpe_public_ip # See preceding note about 1-1 NAT device
           right=$oci_headend1
@@ -25,7 +25,7 @@ write_files:
           encapsulation=yes
           ikelifetime=28800s
           salifetime=3600s
-      conn oci-tunnel-2
+      conn ipsec-tunnel-1
           left=$cpe_local_ip
           leftid=$cpe_public_ip # See preceding note about 1-1 NAT device
           right=$oci_headend2
@@ -60,9 +60,10 @@ runcmd:
   - sysctl -w net.ipv4.conf.all.accept_redirects=0
   - sysctl -w net.ipv4.conf.all.send_redirects=0
   - sysctl -w net.ipv4.conf.default.send_redirects=0
-  - sysctl -w net.ipv4.conf.eth0.send_redirects=0
+  - sysctl -w net.ipv4.conf.ens3.send_redirects=0
   - sysctl -w net.ipv4.conf.default.accept_redirects=0
-  - sysctl -w net.ipv4.conf.eth0.accept_redirects=0
+  - sysctl -w net.ipv4.conf.ens3.accept_redirects=0
+  - sysctl -p
 
 final_message: "The system is finally up, after $UPTIME seconds"
 output: {all: '| tee -a /root/cloud-init-output.log'}

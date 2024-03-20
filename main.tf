@@ -90,7 +90,7 @@ resource "oci_core_ipsec" "ipsec" {
 resource "oci_core_ipsec_connection_tunnel_management" "tunnel" {
   ipsec_id     = oci_core_ipsec.ipsec.0.id
   tunnel_id    = data.oci_core_ipsec_connection_tunnels.tunnels.ip_sec_connection_tunnels[count.index].id
-  display_name = "IPSec Tunnel (${random_string.deploy_id.result}) [${count.index}]"
+  display_name = "ipsec-tunnel-${count.index}"
   routing      = "BGP"
   bgp_session_info {
     customer_bgp_asn      = "42069"

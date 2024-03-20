@@ -45,6 +45,7 @@ variableGroups:
   - title: "Example LDAP Server Compute Configuration"
     variables:
     - ldap_instance_shape
+    - ldap_instance_visibility
 
   - title: "Bastion Configuration"
     variables:
@@ -171,6 +172,14 @@ variables:
     required: true
     dependsOn:
       compartmentId: compartment_ocid
+
+  ldap_instance_visibility:
+    type: enum
+    enum:
+    - "Private"
+    - "Public"
+    title: "LDAP will be hosted in public or private subnet(s)"
+    required: true
 
   create_bastion_subnet:
     type: boolean
