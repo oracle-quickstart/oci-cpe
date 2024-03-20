@@ -1,0 +1,78 @@
+#cloud-config
+
+packages:
+  - libreswan
+  - frr
+
+write_files:
+# setup script
+  - path: "/root/setup.preflight.sh"
+    permissions: "0777"
+    encoding: "gzip+base64"
+    content: |
+      ${setup_preflight_sh_content}
+  - path: "/root/setup.sh"
+    permissions: "0777"
+    encoding: "gzip+base64"
+    content: |
+      ${setup_template_sh_content}
+  - path: "/root/deploy.sh"
+    permissions: "0777"
+    encoding: "gzip+base64"
+    content: |
+      ${deploy_template_content}
+  - path: "/etc/ipsec.d/oci-ipsec.conf"
+    permissions: "0644"
+    content: |
+      conn oci-tunnel-1
+          left=${cpe_local_ip}
+          leftid=${cpe_public_ip} # See preceding note about 1-1 NAT device
+          right=${oci_headend1}
+          authby=secret
+          leftsubnet=0.0.0.0/0
+          rightsubnet=0.0.0.0/0
+          auto=start
+          mark=5/0xffffffff # Needs to be unique across all tunnels
+          vti-interface=vti1
+          vti-routing=no
+          ikev2=no # To use IKEv2, change to ikev2=insist
+          ike=aes_cbc256-sha2_384;modp1536
+          phase2alg=aes_gcm256;modp1536
+          encapsulation=yes
+          ikelifetime=28800s
+          salifetime=3600s
+      conn oci-tunnel-2
+          left=${cpe_local_ip}
+          leftid=${cpe_public_ip} # See preceding note about 1-1 NAT device
+          right=${oci_headend2}
+          authby=secret
+          leftsubnet=0.0.0.0/0
+          rightsubnet=0.0.0.0/0
+          auto=start
+          mark=6/0xffffffff # Needs to be unique across all tunnels
+          vti-interface=vti2
+          vti-routing=no
+          ikev2=no # To use IKEv2, change to ikev2=insist
+          ike=aes_cbc256-sha2_384;modp1536
+          phase2alg=aes_gcm256;modp1536
+          encapsulation=yes
+          ikelifetime=28800s
+          salifetime=3600s
+  - path: "/etc/ipsec.d/oci-ipsec.secrets"
+    permissions: "0644"
+    content: |
+      ${cpe_public_ip} ${oci_headend1}: PSK "${shared_secret_psk}"
+      ${cpe_public_ip} ${oci_headend2}: PSK "${shared_secret_psk}"
+
+runcmd:
+  - echo "Running prep scripts..."
+  - /root/setup.preflight.sh
+  - echo "Finished prep scripts."
+  - echo "Restarting IPSec..."
+  - service ipsec restart
+  - systemctl enable ipsec
+  - echo "Configuring IP Routing..."
+  - ip route show
+
+final_message: "The system is finally up, after $UPTIME seconds"
+output: {all: '| tee -a /root/cloud-init-output.log'}
