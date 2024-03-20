@@ -70,9 +70,7 @@ resource "random_shuffle" "compute_ad" {
   input        = local.compute_available_limit_ad_list
   result_count = length(local.compute_available_limit_ad_list)
 }
-resource "random_bytes" "shared_secret_psk" {
-  length = 64
-}
+
 locals {
   compute_multiplier_nodes_ocpus  = local.is_flexible_cpe_instance_shape ? (var.cpe_instance_shape.ocpus) : 1
   compute_available_limit_ad_list = [for limit in data.oci_limits_resource_availability.compute_resource_availability : limit.availability_domain if(limit.available - local.compute_multiplier_nodes_ocpus) >= 0]
@@ -84,11 +82,13 @@ locals {
   compute_flexible_shapes = [
     "VM.Standard.E3.Flex",
     "VM.Standard.E4.Flex",
+    "VM.Standard.E5.Flex",
     "VM.Standard.A1.Flex"
   ]
   compute_shape_flexible_descriptions = [
     "Cores for Standard.E3.Flex and BM.Standard.E3.128 Instances",
     "Cores for Standard.E4.Flex and BM.Standard.E4.128 Instances",
+    "Cores for Standard.E5.Flex and BM.Standard.E5.128 Instances",
     "Cores for Standard.A1 based VM and BM Instances"
   ]
   compute_arm_shapes = [

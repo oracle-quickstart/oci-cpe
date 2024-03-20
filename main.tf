@@ -63,7 +63,7 @@ resource "oci_core_drg_attachment_management" "drg" {
   compartment_id     = var.compartment_ocid
   network_id         = data.oci_core_ipsec_connection_tunnels.tunnels.ip_sec_connection_tunnels[count.index].id
   drg_id             = oci_core_drg.drg.id
-  display_name       = "DRG IpSec Attachment (${random_string.deploy_id.result}) [${count.index}]"
+  display_name       = "DRG IPSec Attachment (${random_string.deploy_id.result}) [${count.index}]"
   drg_route_table_id = oci_core_drg_route_table.drg.id
   freeform_tags      = local.oci_tag_values.freeformTags
   defined_tags       = local.oci_tag_values.definedTags
@@ -72,11 +72,11 @@ resource "oci_core_drg_attachment_management" "drg" {
 }
 
 ################################################################################
-# CPE IpSec Tunnel
+# CPE IPSec Tunnel
 ################################################################################
 resource "oci_core_ipsec" "ipsec" {
   compartment_id            = var.compartment_ocid
-  display_name              = "IpSec Connection (${random_string.deploy_id.result}) [${count.index}]"
+  display_name              = "IPSec Connection (${random_string.deploy_id.result}) [${count.index}]"
   cpe_id                    = oci_core_cpe.cpe[count.index].id
   drg_id                    = oci_core_drg.drg.id
   static_routes             = [lookup(local.network_cidrs, "CPE-REGIONAL-SUBNET-CIDR")]
@@ -90,16 +90,19 @@ resource "oci_core_ipsec" "ipsec" {
 resource "oci_core_ipsec_connection_tunnel_management" "tunnel" {
   ipsec_id     = oci_core_ipsec.ipsec.0.id
   tunnel_id    = data.oci_core_ipsec_connection_tunnels.tunnels.ip_sec_connection_tunnels[count.index].id
-  display_name = "IpSec Tunnel (${random_string.deploy_id.result}) [${count.index}]"
+  display_name = "IPSec Tunnel (${random_string.deploy_id.result}) [${count.index}]"
   routing      = "BGP"
   bgp_session_info {
-    customer_bgp_asn      = "1234"
-    customer_interface_ip = lookup(local.network_cidrs, "BGP-CUSTOMER-CIDR-${count.index}")
-    oracle_interface_ip   = lookup(local.network_cidrs, "BGP-ORACLE-CIDR-${count.index}")
+    customer_bgp_asn      = "42069"
+    customer_interface_ip = "${cidrhost(local.network_cidrs["BGP-CIDR-${count.index}"], 1)}/${split("/", local.network_cidrs["BGP-CIDR-${count.index}"])[1]}"
+    oracle_interface_ip   = "${cidrhost(local.network_cidrs["BGP-CIDR-${count.index}"], 2)}/${split("/", local.network_cidrs["BGP-CIDR-${count.index}"])[1]}"
   }
 
-  shared_secret = random_bytes.shared_secret_psk.hex
+  shared_secret = local.shared_secret_psk
   ike_version   = "V1"
 
   count = 2
+}
+locals {
+    shared_secret_psk = sensitive(bcrypt(uuid())) # using local and bcrypt to hash the shared secret. The secret does not appear in the state file.
 }
