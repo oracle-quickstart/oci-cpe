@@ -135,26 +135,12 @@ data "cloudinit_config" "ldap_server" {
 
 ## Files and Templatefiles
 locals {
-  setup_preflight = file("${path.module}/cloudinit/setup.preflight.sh")
-  setup_cpe_template = templatefile("${path.module}/cloudinit/setup_cpe.template.sh",
-    {
-      oracle_client_version = "xx"
-  })
-  deploy_template = templatefile("${path.module}/cloudinit/deploy.template.sh",
-    {
-      oracle_client_version = "xx"
-  })
-  #   ,{
-  #     oracle_client_version   = var.oracle_client_version
-  # })
   cloud_init_cpe = templatefile("${path.module}/cloudinit/cloud_config_cpe.template.yaml",
     {
       shared_secret_psk = local.shared_secret_psk
   })
   cloud_init_ldap_server = templatefile("${path.module}/cloudinit/cloud_config_ldap.template.yaml",
     {
-      setup_preflight_sh_content = base64gzip(local.setup_preflight)
-      # setup_template_sh_content  = base64gzip(local.setup_template)
-      deploy_template_content = base64gzip(local.deploy_template)
+      admin_user = "admin"
   })
 }
