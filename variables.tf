@@ -39,12 +39,12 @@ variable "tag_values" {
 # Variables: Compute Instance - Generic
 ################################################################################
 variable "generate_public_ssh_key" {
-  default = true
+  default     = true
   description = "NOTE: The auto generation of the private key will be stored unencrypted in your Terraform state file. Use of this resource for production deployments is not recommended. Instead, generate a private and public key files outside of Terraform and provide only the public key."
 }
 variable "public_ssh_key" {
   default     = ""
-  description = "In order to access your private nodes with a public SSH key you will need to set up a bastion host (a.k.a. jump box). If using public nodes, bastion is not needed. Left blank to not import keys."
+  description = "In order to access your private compute instances with a public SSH key you will need to set up a bastion host (a.k.a. jump box). If using public nodes, bastion is not needed. Left blank to not import keys."
 }
 
 ################################################################################
@@ -94,10 +94,56 @@ variable "cpe_visibility" {
 variable "cpe_vendor" {
   default     = "Libreswan"
   description = "CPE Vendor. e.g.: Libreswan, Cisco, Juniper, Palo Alto, ..."
+
+  validation {
+    condition     = var.cpe_vendor == "Libreswan"
+    error_message = "Sorry, only Libreswan is supported for now as software based CPE by this scripts. Wireguard and other trials are planned for the future."
+  }
 }
 variable "extra_security_list_name_for_cpe" {
   default     = []
   description = "Extra security lists to be created."
+}
+variable "cpe_instance_count" {
+  default     = 1
+  description = "Number of CPE(s) to be created. Default is 1."
+
+  validation {
+    condition     = var.cpe_visibility == 1
+    error_message = "Sorry, but only one CPE provision is supported right now. Redudancy and HA are planned for the future."
+  }
+}
+
+################################################################################
+# Variables: Compute Instance - Example LDAP Server
+################################################################################
+variable "ldap_instance_shape" {
+  type = map(any)
+  default = {
+    "instanceShape" = "VM.Standard.E4.Flex"
+    "ocpus"         = 1
+    "memory"        = 8
+  }
+  description = "A shape is a template that determines the number of OCPUs, amount of memory, and other resources allocated to a newly created instance."
+}
+variable "ldap_instance_boot_volume_size_in_gbs" {
+  default     = "50"
+  description = "Specify a custom boot volume size (in GB)"
+}
+variable "ldap_image_operating_system" {
+  default     = "Oracle Linux"
+  description = "The OS/image installed on all nodes in the node pool."
+}
+variable "ldap_image_operating_system_version" {
+  default     = "9"
+  description = "The OS/image version installed on all nodes in the node pool."
+}
+variable "create_new_compartment_for_ldap" {
+  default     = false
+  description = "Creates new compartment for Example LDAP Server.  NOTE: The creation of the compartment increases the deployment time by at least 3 minutes, and can increase by 15 minutes when destroying"
+}
+variable "ldap_compartment_description" {
+  default = "Compartment for Example LDAP Server"
 }
 
 ################################################################################

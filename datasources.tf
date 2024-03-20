@@ -99,7 +99,8 @@ locals {
   compute_shape_description              = lookup(local.compute_shape_flexible_vs_descriptions, var.cpe_instance_shape.instanceShape, var.cpe_instance_shape.instanceShape)
 }
 
-# Cloud Init - CPE
+# Cloud Init
+## CPE
 data "cloudinit_config" "cpe" {
   gzip          = true
   base64_encode = true
@@ -107,14 +108,25 @@ data "cloudinit_config" "cpe" {
   part {
     filename     = "cloud-config.yaml"
     content_type = "text/cloud-config"
-    content      = local.cloud_init
+    content      = local.cloud_init_cpe
+  }
+}
+## Example LDAP Server
+data "cloudinit_config" "ldap_server" {
+  gzip          = true
+  base64_encode = true
+
+  part {
+    filename     = "cloud-config.yaml"
+    content_type = "text/cloud-config"
+    content      = local.cloud_init_ldap_server
   }
 }
 
 ## Files and Templatefiles
 locals {
   setup_preflight = file("${path.module}/cloudinit/setup.preflight.sh")
-  setup_template = templatefile("${path.module}/cloudinit/setup.template.sh",
+  setup_cpe_template = templatefile("${path.module}/cloudinit/setup_cpe.template.sh",
     {
       oracle_client_version = "xx"
   })
@@ -125,10 +137,23 @@ locals {
   #   ,{
   #     oracle_client_version   = var.oracle_client_version
   # })
-  cloud_init = templatefile("${path.module}/cloudinit/cloud-config.template.yaml",
+  cloud_init_cpe = templatefile("${path.module}/cloudinit/cloud_config_cpe.template.yaml",
     {
       setup_preflight_sh_content = base64gzip(local.setup_preflight)
-      setup_template_sh_content  = base64gzip(local.setup_template)
+      setup_template_sh_content  = base64gzip(local.setup_cpe_template)
       deploy_template_content    = base64gzip(local.deploy_template)
+      cpe_local_ip               = "0.0.0.0" #oci_core_instance.cpe_instance.0.private_ip
+      cpe_public_ip              = "0.0.0.0" #oci_core_instance.cpe_instance.0.public_ip
+      oci_headend1               = "" #data.oci_core_ipsec_connection_tunnels.tunnels.ip_sec_connection_tunnels[0].vpn_ip
+      oci_headend2               = "" #data.oci_core_ipsec_connection_tunnels.tunnels.ip_sec_connection_tunnels[1].vpn_ip
+      shared_secret_psk          = local.shared_secret_psk
+      #     cpe_vcn_cidr: ${var.onprem_cidr_block}
+      # oci_vcn_cidr: ${var.oci_vcn_cidr_block}
+  })
+  cloud_init_ldap_server = templatefile("${path.module}/cloudinit/cloud_config_ldap.template.yaml",
+    {
+      setup_preflight_sh_content = base64gzip(local.setup_preflight)
+      # setup_template_sh_content  = base64gzip(local.setup_template)
+      deploy_template_content = base64gzip(local.deploy_template)
   })
 }

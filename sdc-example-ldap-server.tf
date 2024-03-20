@@ -34,7 +34,7 @@ resource "oci_core_instance" "ldap_instance" {
 
   metadata = {
     ssh_authorized_keys = var.generate_public_ssh_key ? tls_private_key.compute_ssh_key.public_key_openssh : var.public_ssh_key
-    # user_data           = data.cloudinit_config.nodes.rendered
+    # user_data           = data.cloudinit_config.ldap.rendered
   }
 
   count = 1

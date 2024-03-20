@@ -102,7 +102,11 @@ resource "oci_core_ipsec_connection_tunnel_management" "tunnel" {
   ike_version   = "V1"
 
   count = 2
+
+timeouts {
+    create = "6m"
+  }
 }
 locals {
-    shared_secret_psk = sensitive(bcrypt(uuid())) # using local and bcrypt to hash the shared secret. The secret does not appear in the state file.
+  shared_secret_psk = sensitive(sha256(uuid())) # using local and sha256 to hash the shared secret. The secret does not appear in the state file.
 }
