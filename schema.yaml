@@ -56,6 +56,11 @@ variableGroups:
     variables:
     - tag_values
 
+  - title: "Extras Hidden"
+    variables:
+      - instance_private_key
+    visible: false
+
   - title: "Extras Hidden - CPE"
     variables:
       - extra_security_list_name_for_cpe
