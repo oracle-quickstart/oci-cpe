@@ -46,6 +46,10 @@ variable "public_ssh_key" {
   default     = ""
   description = "In order to access your private compute instances with a public SSH key you will need to set up a bastion host (a.k.a. jump box). If using public nodes, bastion is not needed. Left blank to not import keys."
 }
+variable "instance_private_key" {
+  default     = ""
+  description = "Needed to execute scripts on compute instances. Left blank to not import keys."
+}
 
 ################################################################################
 # Variables: Compute Instance - CPE
@@ -109,7 +113,7 @@ variable "cpe_instance_count" {
   description = "Number of CPE(s) to be created. Default is 1."
 
   validation {
-    condition     = var.cpe_visibility == 1
+    condition     = var.cpe_instance_count == 1
     error_message = "Sorry, but only one CPE provision is supported right now. Redudancy and HA are planned for the future."
   }
 }
