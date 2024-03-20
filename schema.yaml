@@ -31,26 +31,32 @@ variableGroups:
     variables:
     - existent_oci_vcn_ocid
 
+  - title: "SSH Key Configuration for all Instances"
+    variables:
+    - generate_public_ssh_key
+    - public_ssh_key
+
   - title: "CPE Compute Configuration"
     variables:
     - cpe_instance_shape
-    - cpe_instance_boot_volume_size_in_gbs
-    - generate_public_ssh_key
-    - public_ssh_key
     - cpe_visibility
     - cpe_vendor
 
+  - title: "Example LDAP Server Compute Configuration"
+    variables:
+    - ldap_instance_shape
 
   - title: "Bastion Configuration"
     variables:
     - create_bastion_subnet
     - bastion_visibility
+    visible: false
 
   - title: "Tagging"
     variables:
     - tag_values
 
-  - title: "Extras Hidden"
+  - title: "Extras Hidden - CPE"
     variables:
       - extra_security_list_name_for_cpe
       - cpe_compartment_description
@@ -58,6 +64,16 @@ variableGroups:
       - cpe_image_operating_system
       - cpe_image_operating_system_version
       - cpe_instance_boot_volume_size_in_gbs
+      - cpe_instance_count
+    visible: false
+
+  - title: "Extras Hidden - LDAP"
+    variables:
+      - ldap_compartment_description
+      - create_new_compartment_for_ldap
+      - ldap_image_operating_system
+      - ldap_image_operating_system_version
+      - ldap_instance_boot_volume_size_in_gbs
     visible: false
 
   - title: "Hidden CPE Network"
@@ -120,7 +136,7 @@ variables:
 
   cpe_instance_shape:
     type: oci:core:instanceshapewithflex:name
-    title: "Select a flex or fixed shape for the Worker Nodes instances"
+    title: "Select a flex or fixed shape for the CPE compute instances"
     required: true
     dependsOn:
       compartmentId: compartment_ocid
@@ -143,6 +159,13 @@ variables:
     - "Libreswan"
     title: "CPE Vendor. e.g.: Libreswan, WireGuard, ..."
     required: true
+
+  ldap_instance_shape:
+    type: oci:core:instanceshapewithflex:name
+    title: "Select a flex or fixed shape for the Example LDAP Server compute instance"
+    required: true
+    dependsOn:
+      compartmentId: compartment_ocid
 
   create_bastion_subnet:
     type: boolean
