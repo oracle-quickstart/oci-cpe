@@ -40,6 +40,7 @@ variable "tag_values" {
 ################################################################################
 variable "generate_public_ssh_key" {
   default = true
+  description = "NOTE: The auto generation of the private key will be stored unencrypted in your Terraform state file. Use of this resource for production deployments is not recommended. Instead, generate a private and public key files outside of Terraform and provide only the public key."
 }
 variable "public_ssh_key" {
   default     = ""
