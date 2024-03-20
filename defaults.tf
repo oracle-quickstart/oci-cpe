@@ -39,15 +39,13 @@ locals {
   pre_vcn_cidr_blocks           = split(",", var.vcn_cidr_blocks)
   vcn_cidr_blocks               = contains(module.vcn.cidr_blocks, local.pre_vcn_cidr_blocks[0]) ? distinct(concat([local.pre_vcn_cidr_blocks[0]], module.vcn.cidr_blocks)) : module.vcn.cidr_blocks
   network_cidrs = {
-    VCN-MAIN-CIDR                = local.vcn_cidr_blocks[0]                     # e.g.: "10.220.0.0/16" = 65536 usable IPs
-    CPE-REGIONAL-SUBNET-CIDR     = cidrsubnet(local.vcn_cidr_blocks[0], 12, 0)  # e.g.: "10.220.0.0/28" = 15 usable IPs
-    BASTION-REGIONAL-SUBNET-CIDR = cidrsubnet(local.vcn_cidr_blocks[0], 12, 32) # e.g.: "10.220.2.0/28" = 15 usable IPs (10.220.2.0 - 10.220.2.15)
-    PUBLIC-REGIONAL-SUBNET-CIDR  = cidrsubnet(local.vcn_cidr_blocks[0], 6, 3)   # e.g.: "10.220.12.0/22" = 1021 usable IPs (10.220.12.0 - 10.220.15.255)
-    PRIVATE-REGIONAL-SUBNET-CIDR = cidrsubnet(local.vcn_cidr_blocks[0], 6, 4)   # e.g.: "10.220.16.0/22" = 1021 usable IPs (10.220.16.0 - 10.220.19.255)
-    BGP-CUSTOMER-CIDR-0          = cidrsubnet(local.vcn_cidr_blocks[0], 10, 80) # e.g.: "10.220.20.0/26" = 62 usable IPs (10.220.20.0 - 10.220.20.63)
-    BGP-CUSTOMER-CIDR-1          = cidrsubnet(local.vcn_cidr_blocks[0], 10, 81) # e.g.: "10.220.20.64/26" = 62 usable IPs (10.220.20.64 - 10.220.20.127)
-    BGP-ORACLE-CIDR-0            = cidrsubnet(local.vcn_cidr_blocks[0], 10, 82) # e.g.: "10.220.20.128/26" = 62 usable IPs (10.220.20.128 - 10.220.20.191)
-    BGP-ORACLE-CIDR-1            = cidrsubnet(local.vcn_cidr_blocks[0], 10, 83) # e.g.: "10.220.20.192/26" = 62 usable IPs (10.220.20.192 - 10.220.20.255)
+    VCN-MAIN-CIDR                = local.vcn_cidr_blocks[0]                       # e.g.: "10.220.0.0/16" = 65536 usable IPs
+    CPE-REGIONAL-SUBNET-CIDR     = cidrsubnet(local.vcn_cidr_blocks[0], 12, 0)    # e.g.: "10.220.0.0/28" = 15 usable IPs (10.220.0.0 - 10.220.0.15)
+    BASTION-REGIONAL-SUBNET-CIDR = cidrsubnet(local.vcn_cidr_blocks[0], 12, 32)   # e.g.: "10.220.2.0/28" = 15 usable IPs (10.220.2.0 - 10.220.2.15)
+    PUBLIC-REGIONAL-SUBNET-CIDR  = cidrsubnet(local.vcn_cidr_blocks[0], 6, 3)     # e.g.: "10.220.12.0/22" = 1021 usable IPs (10.220.12.0 - 10.220.15.255)
+    PRIVATE-REGIONAL-SUBNET-CIDR = cidrsubnet(local.vcn_cidr_blocks[0], 6, 4)     # e.g.: "10.220.16.0/22" = 1021 usable IPs (10.220.16.0 - 10.220.19.255)
+    BGP-CIDR-0                   = cidrsubnet(local.vcn_cidr_blocks[0], 14, 1945) # e.g.: "10.220.30.100/30" = 3 usable IPs (10.220.30.100 - 10.220.30.103)
+    BGP-CIDR-1                   = cidrsubnet(local.vcn_cidr_blocks[0], 14, 2009) # e.g.: "10.220.31.100/30" = 3 usable IPs (10.220.31.100 - 10.220.31.103)
     ALL-CIDR                     = "0.0.0.0/0"
   }
 }
