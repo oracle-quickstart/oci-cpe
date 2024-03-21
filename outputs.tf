@@ -19,7 +19,7 @@ output "cpe_address" {
 }
 
 output "ldap_address" {
-  value = "${oci_core_instance.ldap_instance.0.public_ip}:389"
+  value = "${oci_core_instance.ldap_instance.0.private_ip}:389"
 }
 
 ### Important Security Notice ###
