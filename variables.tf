@@ -88,10 +88,10 @@ variable "cpe_compartment_description" {
 ################################################################################
 variable "cpe_visibility" {
   default     = "Public"
-  description = "CPE will be hosted in public or private subnet(s)"
+  description = "CPE will be hosted in public or private subnet(s). To simplify the deployment, only public subnet is supported for now."
 
   validation {
-    condition     = var.cpe_visibility == "Private" || var.cpe_visibility == "Public"
+    condition     = var.cpe_visibility == "Public"
     error_message = "Sorry, but CPE visibility can only be Private or Public."
   }
 }
@@ -152,10 +152,10 @@ variable "ldap_compartment_description" {
 
 variable "ldap_instance_visibility" {
   default     = "Private"
-  description = "LDAP will be hosted in public or private subnet(s)"
+  description = "LDAP will be hosted in public or private subnet(s). To simplify the deployment and simulate a real scenario, only private subnet is supported for now."
 
   validation {
-    condition     = var.ldap_instance_visibility == "Private" || var.ldap_instance_visibility == "Public"
+    condition     = var.ldap_instance_visibility == "Private"
     error_message = "Sorry, but LDAP Instance visibility can only be Private or Public."
   }
 }
@@ -183,6 +183,10 @@ variable "bastion_visibility" {
 variable "existent_oci_vcn_ocid" {
   default     = ""
   description = "Using existent Virtual Cloud Network (VCN) OCID for OCI Resources to Connect to DRG."
+}
+variable "existent_oci_vcn_compartment_ocid" {
+  default     = ""
+  description = "Compartment OCID for existent Virtual Cloud Network (VCN)."
 }
 
 ################################################################################

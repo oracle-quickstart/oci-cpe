@@ -1,0 +1,21 @@
+#cloud-config
+
+packages:
+  - slapd
+  - ldap-utils
+
+runcmd:
+  # Configure Ports
+  - echo "Configuring ports..."
+  - iptables -I INPUT 6 -m state --state NEW -p tcp --dport 389 -j ACCEPT
+  - iptables -I INPUT 6 -m state --state NEW -p tcp --dport 636 -j ACCEPT
+  - netfilter-persistent save
+  # Configure LDAP
+  - echo "Configuring slapd..."
+  - systemctl enable slapd
+  - systemctl start slapd
+  - echo "Allowing external connections..."
+  - ufw allow ldap
+
+final_message: "The system is finally up, after $UPTIME seconds"
+output: {all: '| tee -a /root/cloud-init-output.log'}

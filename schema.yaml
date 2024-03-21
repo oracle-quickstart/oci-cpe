@@ -29,6 +29,7 @@ variableGroups:
 
   - title: "OCI Resources Existent VCN"
     variables:
+    - existent_oci_vcn_compartment_ocid
     - existent_oci_vcn_ocid
 
   - title: "SSH Key Configuration for all Instances"
@@ -105,9 +106,9 @@ variables:
 
   app_name:
     type: string
-    title: "Cluster Name Prefix"
+    title: "Name Prefix"
     required: true
-    description: "The prefix for the name of the CPE cluster"
+    description: "Prefix to identify the resources that will be created"
 
   generate_public_ssh_key:
     type: boolean
@@ -133,6 +134,13 @@ variables:
         - not:
           - generate_public_ssh_key
 
+  existent_oci_vcn_compartment_ocid:
+    type: oci:identity:compartment:id
+    title: "Existent VCN Compartment"
+    required: true
+    default: compartment_ocid
+    visible: true
+
   existent_oci_vcn_ocid:
     type: oci:core:vcn:id
     title: "Existent VCN with OCI Resources (e.g.: WebLogic on OCI, ATP, etc) to be connected to the CPE"
@@ -154,7 +162,6 @@ variables:
   cpe_visibility:
     type: enum
     enum:
-    - "Private"
     - "Public"
     title: "CPE will be hosted in public or private subnet(s)"
     required: true
@@ -163,7 +170,7 @@ variables:
     type: enum
     enum:
     - "Libreswan"
-    title: "CPE Vendor. e.g.: Libreswan, WireGuard, ..."
+    title: "Enter the CPE vendor to be used. Currently only Libreswan is supported."
     required: true
 
   ldap_instance_shape:
@@ -177,7 +184,6 @@ variables:
     type: enum
     enum:
     - "Private"
-    - "Public"
     title: "LDAP will be hosted in public or private subnet(s)"
     required: true
 
@@ -201,3 +207,56 @@ variables:
     visible: show_advanced
     dependsOn:
       compartmentId: compartment_ocid
+
+outputGroups:
+  - title: Deployment Info
+    outputs:
+      - deploy_id
+      - stack_version
+
+  - title: Passwords and Keys
+    outputs:
+      - generated_private_key_pem
+
+  - title: Comments
+    outputs:
+      - comments
+
+  - title: Dev Notes
+    outputs:
+      - dev
+
+outputs:
+  deploy_id:
+    type: string
+    title: "Deployment Id"
+    visible: true
+
+  stack_version:
+    type: string
+    title: Stack Version
+    displayText: Stack Version deployed
+    visible: true
+
+  generated_private_key_pem:
+    type: string
+    title: Generated Private Key
+    displayText: Generated Private Key
+
+  comments:
+    type: string
+    title: Comments
+    displayText: Comments
+    visible: true
+
+  dev:
+    type: string
+    title: dev
+    displayText: dev note from Oracle Developers
+    visible: true
+
+  sensitive_comments_local_tf:
+    type: string
+    title: kubeconfig
+    displayText: Instructions to get sensitive outputs on local Terraform. Not used by ORM
+    visible: false
