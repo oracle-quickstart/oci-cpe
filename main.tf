@@ -99,7 +99,7 @@ resource "oci_core_ipsec_connection_tunnel_management" "tunnel" {
   }
 
   shared_secret = local.shared_secret_psk
-  ike_version   = "V1"
+  ike_version   = "V2"
 
   count = 2
 

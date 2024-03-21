@@ -19,7 +19,7 @@ write_files:
           mark=5/0xffffffff # Needs to be unique across all tunnels
           vti-interface=vti1
           vti-routing=no
-          ikev2=no # To use IKEv2, change to ikev2=insist
+          ikev2=insist
           ike=aes_cbc256-sha2_384;modp1536
           phase2alg=aes_gcm256;modp1536
           encapsulation=yes
@@ -36,7 +36,7 @@ write_files:
           mark=6/0xffffffff # Needs to be unique across all tunnels
           vti-interface=vti2
           vti-routing=no
-          ikev2=no # To use IKEv2, change to ikev2=insist
+          ikev2=insist
           ike=aes_cbc256-sha2_384;modp1536
           phase2alg=aes_gcm256;modp1536
           encapsulation=yes

@@ -218,9 +218,10 @@ outputGroups:
     outputs:
       - generated_private_key_pem
 
-  - title: Comments
+  - title: Simulated Data Center info
     outputs:
-      - comments
+      - cpe_address
+      - ldap_address
 
   - title: Dev Notes
     outputs:
@@ -243,10 +244,16 @@ outputs:
     title: Generated Private Key
     displayText: Generated Private Key
 
-  comments:
+  cpe_address:
     type: string
-    title: Comments
-    displayText: Comments
+    title: CPE IP Address
+    displayText: External CPE IP Address
+    visible: true
+
+  ldap_address:
+    type: string
+    title: LDAP IP Address and Port
+    displayText: Private LDAP IP Address and Port
     visible: true
 
   dev:
@@ -254,9 +261,3 @@ outputs:
     title: dev
     displayText: dev note from Oracle Developers
     visible: true
-
-  sensitive_comments_local_tf:
-    type: string
-    title: kubeconfig
-    displayText: Instructions to get sensitive outputs on local Terraform. Not used by ORM
-    visible: false
