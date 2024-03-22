@@ -7,7 +7,7 @@ terraform {
   required_providers {
     oci = {
       source  = "oracle/oci"
-      version = "~> 4, < 6"
+      version = ">= 5, < 6"
       # https://registry.terraform.io/providers/oracle/oci/
     }
     tls = {
