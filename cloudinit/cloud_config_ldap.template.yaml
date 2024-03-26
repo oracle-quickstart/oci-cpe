@@ -4,25 +4,34 @@ packages:
   - slapd
   - ldap-utils
 
-# write_files:
-#   - path: "/etc/ldap/ldap.conf"
-#     permissions: "0644"
-#     content: |
-#       BASE dc=example,dc=com
-#       URI  ldap://ip-10-0-0-10.us-phoenix-1.compute.internal
-
 runcmd:
+  # Configure LDAP
+  - echo "Configuring slapd..."
+  - printf '%s\n' "slapd slapd/internal/generated_adminpw password ${LDAP_ADMIN_PASSWORD}" | debconf-set-selections
+  - printf '%s\n' "slapd slapd/internal/adminpw password ${LDAP_ADMIN_PASSWORD}" | debconf-set-selections
+  - printf '%s\n' "slapd slapd/password2 password ${LDAP_ADMIN_PASSWORD}" | debconf-set-selections
+  - printf '%s\n' "slapd slapd/password1 password ${LDAP_ADMIN_PASSWORD}" | debconf-set-selections
+  - printf '%s\n' "slapd slapd/dump_database_destdir string /var/backups/slapd-VERSION" | debconf-set-selections
+  - printf '%s\n' "slapd slapd/domain string ${LDAP_DOMAIN}" | debconf-set-selections
+  - printf '%s\n' "slapd shared/organization string ${LDAP_ORGANIZATION}" | debconf-set-selections
+  - printf '%s\n' "slapd slapd/backend string ${LDAP_BACKEND}" | debconf-set-selections
+  - printf '%s\n' "slapd slapd/purge_database boolean true" | debconf-set-selections
+  - printf '%s\n' "slapd slapd/move_old_database boolean true" | debconf-set-selections
+  - printf '%s\n' "slapd slapd/allow_ldap_v2 boolean false" | debconf-set-selections
+  - printf '%s\n' "slapd slapd/no_configuration boolean false" | debconf-set-selections
+  - printf '%s\n' "slapd slapd/dump_database select when needed" | debconf-set-selections
+  - dpkg-reconfigure -f noninteractive slapd
+  # Start LDAP
+  - echo "Starting slapd..."
+  - systemctl enable slapd
+  - systemctl start slapd
+  - echo "Allowing external LDAP connections..."
+  - ufw allow ldap
   # Configure Ports
   - echo "Configuring ports..."
   - iptables -I INPUT 6 -m state --state NEW -p tcp --dport 389 -j ACCEPT
   - iptables -I INPUT 6 -m state --state NEW -p tcp --dport 636 -j ACCEPT
   - netfilter-persistent save
-  # Configure LDAP
-  - echo "Configuring slapd..."
-  - systemctl enable slapd
-  - systemctl start slapd
-  - echo "Allowing external connections..."
-  - ufw allow ldap
 
 final_message: "The system is finally up, after $UPTIME seconds"
 output: {all: '| tee -a /root/cloud-init-output.log'}

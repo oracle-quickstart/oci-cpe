@@ -149,7 +149,6 @@ variable "create_new_compartment_for_ldap" {
 variable "ldap_compartment_description" {
   default = "Compartment for Example LDAP Server"
 }
-
 variable "ldap_instance_visibility" {
   default     = "Private"
   description = "LDAP will be hosted in public or private subnet(s). To simplify the deployment and simulate a real scenario, only private subnet is supported for now."
@@ -158,6 +157,14 @@ variable "ldap_instance_visibility" {
     condition     = var.ldap_instance_visibility == "Private"
     error_message = "Sorry, but LDAP Instance visibility can only be Private or Public."
   }
+}
+variable "ldap_domain" {
+  default     = "example.com"
+  description = "LDAP Domain Name. e.g.: example.com"
+}
+variable "ldap_organization" {
+  default     = "Oracle Quickstarts LDAP Example"
+  description = "LDAP Organization Name. e.g.: Example"
 }
 
 ################################################################################

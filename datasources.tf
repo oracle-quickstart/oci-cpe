@@ -141,6 +141,13 @@ locals {
   })
   cloud_init_ldap_server = templatefile("${path.module}/cloudinit/cloud_config_ldap.template.yaml",
     {
-      admin_user = "admin"
+      LDAP_ADMIN_PASSWORD = random_password.ldap_admin_password.result
+      LDAP_DOMAIN        = var.ldap_domain
+      LDAP_ORGANIZATION  = var.ldap_organization
+      LDAP_BACKEND       = "mdb"
   })
+}
+
+resource "random_password" "ldap_admin_password" {
+  length           = 10
 }

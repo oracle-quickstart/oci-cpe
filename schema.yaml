@@ -81,6 +81,8 @@ variableGroups:
       - ldap_image_operating_system
       - ldap_image_operating_system_version
       - ldap_instance_boot_volume_size_in_gbs
+      - ldap_domain
+      - ldap_organization
     visible: false
 
   - title: "Hidden CPE Network"
@@ -217,6 +219,7 @@ outputGroups:
   - title: Passwords and Keys
     outputs:
       - generated_private_key_pem
+      - ldap_admin_password
 
   - title: Simulated Data Center info
     outputs:
@@ -243,6 +246,11 @@ outputs:
     type: string
     title: Generated Private Key
     displayText: Generated Private Key
+
+  ldap_admin_password:
+    type: string
+    title: LDAP Server Admin Password
+    displayText: Generated LDAP Server Admin Password
 
   cpe_address:
     type: string
