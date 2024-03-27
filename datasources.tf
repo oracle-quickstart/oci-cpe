@@ -49,6 +49,17 @@ data "oci_identity_availability_domains" "ADs" {
   compartment_id = var.tenancy_ocid
 }
 
+# Private IP for CPE
+data "oci_core_private_ips" "cpe" {
+    ip_address = oci_core_instance.cpe_instance.0.private_ip
+    subnet_id = var.create_subnets ? module.subnets["cpe_subnet"].subnet_id : var.existent_cpe_subnet_ocid
+}
+
+# OCI VCN DS
+data "oci_core_vcn" "existent_oci_vcn" {
+    vcn_id = var.existent_oci_vcn_ocid
+}
+
 # Check for resource limits
 ## Check available compute shape
 data "oci_limits_services" "compute_services" {

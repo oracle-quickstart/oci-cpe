@@ -12,22 +12,27 @@ terraform {
     }
     tls = {
       source  = "hashicorp/tls"
-      version = "~> 4"
+      version = ">= 4"
       # https://registry.terraform.io/providers/hashicorp/tls/
     }
     local = {
       source  = "hashicorp/local"
-      version = "~> 2"
+      version = ">= 2.5"
       # https://registry.terraform.io/providers/hashicorp/local/
     }
     random = {
       source  = "hashicorp/random"
-      version = "~> 3"
+      version = ">= 3.6"
       # https://registry.terraform.io/providers/hashicorp/random/
     }
     cloudinit = {
       source  = "hashicorp/cloudinit"
-      version = "~> 2"
+      version = ">= 2.3"
+      # https://registry.terraform.io/providers/hashicorp/cloudinit/
+    }
+    null = {
+      source  = "hashicorp/null"
+      version = ">= 3"
       # https://registry.terraform.io/providers/hashicorp/cloudinit/
     }
   }

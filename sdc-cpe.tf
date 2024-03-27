@@ -30,6 +30,7 @@ resource "oci_core_instance" "cpe_instance" {
     display_name     = "primaryvnic"
     assign_public_ip = (var.cpe_visibility == "Private") ? false : true
     hostname_label   = "cpe-${random_string.deploy_id.result}-${count.index}"
+    skip_source_dest_check = true
   }
 
   metadata = {
@@ -412,4 +413,26 @@ resource "null_resource" "cpe_oci_ipsec_service" {
   }
 
   depends_on = [oci_core_ipsec_connection_tunnel_management.tunnel]
+}
+
+# Post Provisioning Route Tables
+## CPE Route Table
+resource "oci_core_default_route_table" "post_cpe_provisioning" {
+    compartment_id = var.compartment_ocid
+    manage_default_resource_id = module.vcn.default_route_table_id
+    display_name = "CPE Post-Provisioning Route Table (${local.deploy_id})"
+    freeform_tags = local.oci_tag_values.freeformTags
+    defined_tags  = local.oci_tag_values.definedTags
+    route_rules {
+        network_entity_id = module.gateways.internet_gateway_id
+        description = "Traffic to/from internet 2"
+        destination = lookup(local.network_cidrs, "ALL-CIDR")
+        destination_type = "CIDR_BLOCK"
+    }
+    route_rules {
+        network_entity_id = data.oci_core_private_ips.cpe.private_ips.0.id
+        description = "Traffic from OCI services to CPE"
+        destination = data.oci_core_vcn.existent_oci_vcn.cidr_blocks.0
+        destination_type = "CIDR_BLOCK"
+    }
 }
