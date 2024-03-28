@@ -70,7 +70,7 @@ locals {
       dns_label                    = "cpe${local.deploy_id}"
       prohibit_public_ip_on_vnic   = (var.cpe_visibility == "Private") ? true : false
       prohibit_internet_ingress    = (var.cpe_visibility == "Private") ? true : false
-      route_table_id               = (var.cpe_visibility == "Private") ? module.route_tables["private"].route_table_id : module.route_tables["public"].route_table_id
+      # route_table_id               = (var.cpe_visibility == "Private") ? module.route_tables["private"].route_table_id : module.route_tables["public"].route_table_id
       alternative_route_table_name = null
       dhcp_options_id              = module.vcn.default_dhcp_options_id
       security_list_ids            = [module.security_lists["cpe_security_list"].security_list_id]
@@ -393,6 +393,8 @@ resource "null_resource" "cpe_oci_ipsec_conf" {
       "sudo sed -i -e 's|$oci_headend2|${data.oci_core_ipsec_connection_tunnels.tunnels.ip_sec_connection_tunnels[1].vpn_ip}|g' '/etc/ipsec.d/oci-ipsec.secrets' || (echo ' *** Failed to update /etc/ipsec.d/oci-ipsec.secrets. Exiting...' && exit 0)",
     ]
   }
+
+  depends_on = [oci_core_ipsec_connection_tunnel_management.tunnel]
 }
 
 resource "null_resource" "cpe_oci_ipsec_service" {
@@ -412,7 +414,9 @@ resource "null_resource" "cpe_oci_ipsec_service" {
     ]
   }
 
-  depends_on = [oci_core_ipsec_connection_tunnel_management.tunnel]
+  depends_on = [
+    oci_core_ipsec_connection_tunnel_management.tunnel,
+    null_resource.cpe_oci_ipsec_conf]
 }
 
 # Post Provisioning Route Tables
@@ -420,7 +424,7 @@ resource "null_resource" "cpe_oci_ipsec_service" {
 resource "oci_core_default_route_table" "post_cpe_provisioning" {
     compartment_id = var.compartment_ocid
     manage_default_resource_id = module.vcn.default_route_table_id
-    display_name = "CPE Post-Provisioning Route Table (${local.deploy_id})"
+    display_name = "CPE Post-Provisioning Default Route Table (${local.deploy_id})"
     freeform_tags = local.oci_tag_values.freeformTags
     defined_tags  = local.oci_tag_values.definedTags
     route_rules {
@@ -435,4 +439,6 @@ resource "oci_core_default_route_table" "post_cpe_provisioning" {
         destination = data.oci_core_vcn.existent_oci_vcn.cidr_blocks.0
         destination_type = "CIDR_BLOCK"
     }
+
+    depends_on = [ null_resource.cpe_oci_ipsec_service ]
 }
